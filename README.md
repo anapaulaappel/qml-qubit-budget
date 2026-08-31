@@ -1,5 +1,7 @@
 # D2 as a qubit budget / fractal features for QML
 
+Repository: <https://github.com/anapaulaappel/qml-qubit-budget>
+
 \(D_2\) answers *how many* qubits; FD-ASE answers *which* original attributes. Comparisons are **quantum vs quantum** (same fidelity kernel, different feature views) — not QSVM vs SVM.
 
 Notes: [docs/d2-qubit-budget.md](docs/d2-qubit-budget.md) (Portuguese), [docs/d2-qubit-budget.en.md](docs/d2-qubit-budget.en.md) (English). The idea of density-biased *row* sampling for QML is parked in [BBS-em-quantum.md](../BBS-em-quantum.md) at the repo root; it is not evaluated here.
@@ -10,7 +12,7 @@ Notes: [docs/d2-qubit-budget.md](docs/d2-qubit-budget.md) (Portuguese), [docs/d2
 |------|------|
 | `qml/` | Feature maps, kernels, tasks, loaders, CLI |
 | `tests/` | Ceiling benchmark and encoding pipeline (Qiskit optional) |
-| `docs/` | Article (PT/EN) and figures |
+| `docs/` | Notes (PT/EN), simulator CSVs, figures, hardware kernels |
 | `results/` | CSV and plots from the last run (gitignored) |
 
 ## Run
@@ -34,7 +36,6 @@ Article artefacts (versioned, not gitignored):
 | `docs/figures/qubit-budget/` | English plots |
 | `docs/encodings/` | Dense-angle / re-uploading |
 | `docs/hardware/` | IBM kernels (`*.npz`, CSV, figures) |
-| `docs/paper/d2-qubit-budget.tex` | LNCS-style draft |
 
 Hardware IBM (suite for the paper; credentials **only** in the environment, never in the repo):
 

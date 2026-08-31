@@ -7,3 +7,4 @@ dist/
 build/
 .mplconfig/
 .DS_Store
+docs/paper/

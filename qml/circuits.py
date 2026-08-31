@@ -70,12 +70,21 @@ def require_qiskit() -> None:
         )
 
 
-def scale_angles(X: NDArray[np.floating]) -> NDArray[np.float64]:
-    """Escala atributos para [0, π], faixa usual do ZZFeatureMap."""
+def scale_angles(X: NDArray[np.floating], bandwidth: float = 1.0) -> NDArray[np.float64]:
+    """Escala cada atributo para [0, cπ], com c o bandwidth do mapa de ângulo.
+
+    O valor c=1 é a faixa usual do ZZFeatureMap. c<1 encolhe as rotações
+    (retarda concentração); c>1 alarga-as. Cada coluna é equalizada
+    independentemente, por isso um eixo de ruído entra tão largo quanto um
+    eixo de sinal.
+    """
     X = np.asarray(X, dtype=np.float64)
+    if bandwidth <= 0.0 or not np.isfinite(bandwidth):
+        raise ValueError("bandwidth deve ser um real positivo finito.")
     if X.shape[0] == 0:
         return X
-    scaler = MinMaxScaler(feature_range=(0.0, float(np.pi)))
+    hi = float(bandwidth) * float(np.pi)
+    scaler = MinMaxScaler(feature_range=(0.0, hi))
     return np.asarray(scaler.fit_transform(X), dtype=np.float64)
 
 
@@ -275,9 +284,10 @@ def _states(
     entanglement: str,
     encoding: str = "zz",
     n_qubits: int | None = None,
+    bandwidth: float = 1.0,
 ) -> list[Any]:
     require_qiskit()
-    Xs = scale_angles(X)
+    Xs = scale_angles(X, bandwidth=bandwidth)
     q = int(n_qubits) if n_qubits is not None else int(Xs.shape[1])
     kind = _as_encoding(encoding)
     if kind == "zz" and n_qubits is None:
@@ -301,12 +311,20 @@ def fidelity_kernel(
     entanglement: str = "linear",
     encoding: str = "zz",
     n_qubits: int | None = None,
+    bandwidth: float = 1.0,
 ) -> NDArray[np.float64]:
     """Kernel de fidelidade |⟨ψ(x)|ψ(y)⟩|² via statevector (simulador exato)."""
     require_qiskit()
     X = np.asarray(X, dtype=np.float64)
     kind = _as_encoding(encoding)
-    states_x = _states(X, reps=reps, entanglement=entanglement, encoding=kind, n_qubits=n_qubits)
+    states_x = _states(
+        X,
+        reps=reps,
+        entanglement=entanglement,
+        encoding=kind,
+        n_qubits=n_qubits,
+        bandwidth=bandwidth,
+    )
     if Y is None:
         n = len(states_x)
         kernel = np.eye(n, dtype=np.float64)
@@ -317,7 +335,14 @@ def fidelity_kernel(
                 kernel[j, i] = value
         return kernel
     Y = np.asarray(Y, dtype=np.float64)
-    states_y = _states(Y, reps=reps, entanglement=entanglement, encoding=kind, n_qubits=n_qubits)
+    states_y = _states(
+        Y,
+        reps=reps,
+        entanglement=entanglement,
+        encoding=kind,
+        n_qubits=n_qubits,
+        bandwidth=bandwidth,
+    )
     kernel = np.empty((len(states_x), len(states_y)), dtype=np.float64)
     for i, sx in enumerate(states_x):
         for j, sy in enumerate(states_y):

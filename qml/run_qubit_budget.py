@@ -17,7 +17,7 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "d2-qubit-budget"))
 
 from qml.circuits import QISKIT_AVAILABLE
-from qml.data import DATASET_NAMES, load_qml_dataset
+from qml.data import DATASET_NAMES, display_name, load_qml_dataset
 from qml.features import SWEEP_VIEWS
 from qml.kernel_tasks import KERNEL_FAMILIES
 from qml.qubit_budget import SweepRow, last_alive_q, run_dataset_sweep
@@ -136,12 +136,12 @@ def _plot_dataset(rows: list[SweepRow], out: Path) -> None:
         axes[1, 1].set_xlabel(r"$q$ (qubits / features)")
         axes[1, 2].set_xlabel(r"$q$ (qubits / features)")
         fig.suptitle(
-            rf"{name}: $D_2$={d2:.2f}, ceiling $\lceil D_2\rceil$={ceiling} (dotted), "
+            rf"{display_name(name)}: $D_2$={d2:.2f}, ceiling $\lceil D_2\rceil$={ceiling} (dotted), "
             f"PCA-95%={subset[0].pca95} (dashed)"
         )
         fig.tight_layout()
         out.parent.mkdir(parents=True, exist_ok=True)
-        fig.savefig(out.with_name(f"qubit_budget_{name}.png"), dpi=140)
+        fig.savefig(out.with_name(f"qubit_budget_{display_name(name)}.png"), dpi=140)
         plt.close(fig)
 
 
@@ -168,6 +168,7 @@ def _plot_ceiling_scatter(rows: list[SweepRow], out: Path) -> None:
         alive.append(float(last))
     if not names:
         return
+    labels = [display_name(n) for n in names]
     fig, axes = plt.subplots(1, 3, figsize=(10.8, 3.7), sharey=True)
     y_lo = 1
     y_hi = max(int(max(alive)), max(d2_c), 8)
@@ -176,12 +177,24 @@ def _plot_ceiling_scatter(rows: list[SweepRow], out: Path) -> None:
         (twonn_c, r"$\lceil\mathrm{TwoNN}\rceil$", axes[1], False),
         (pca95, "PCA 95%", axes[2], False),
     )
+    offsets = {
+        "intrinsic2": (-52, 4),
+        "moons": (5, -11),
+        "breast": (5, 4),
+        "iris": (5, -11),
+        "onebig": (5, 4),
+        "pendigits": (5, 4),
+        "digits": (5, 4),
+        "wine": (5, 4),
+        "diabetes": (5, -11),
+    }
     for xs, xlabel, ax, equal in compact:
         x_hi = max(max(xs), y_hi) if equal else max(max(xs), 8)
         ax.plot([y_lo, x_hi], [y_lo, x_hi], "k:", linewidth=1.0)
         ax.scatter(xs, alive, s=42, zorder=3)
-        for x, y, label in zip(xs, alive, names, strict=True):
-            ax.annotate(label, (x, y), textcoords="offset points", xytext=(4, 3), fontsize=7)
+        for x, y, label in zip(xs, alive, labels, strict=True):
+            dx, dy = offsets.get(label, (5, 4))
+            ax.annotate(label, (x, y), textcoords="offset points", xytext=(dx, dy), fontsize=7)
         ax.set_xlabel(xlabel)
         ax.set_xlim(y_lo - 0.4, x_hi + 0.4)
         ax.set_ylim(y_lo - 0.4, y_hi + 0.4)
@@ -214,7 +227,7 @@ def _print_summary(rows: list[SweepRow]) -> None:
         delta_d2 = "" if last is None else str(int(last) - d2_c)
         delta_95 = "" if last is None else str(int(last) - pca95)
         print(
-            f"{name:16s} {chunk[0].e_original:3d} {chunk[0].d2:6.2f} {d2_c:5d} "
+            f"{display_name(name):16s} {chunk[0].e_original:3d} {chunk[0].d2:6.2f} {d2_c:5d} "
             f"{chunk[0].twonn:6.2f} {chunk[0].twonn_ceiling:5d} {pca95:5d} "
             f"{str(last):>6s} {delta_d2:>5s} {delta_95:>5s}",
             flush=True,
@@ -234,7 +247,7 @@ def _print_summary(rows: list[SweepRow]) -> None:
         alive = last_alive_q(chunk, key[1], key[2])
         delta = "" if alive is None else str(int(alive) - ceiling)
         print(
-            f"{key[0]:16s} {key[1]:8s} {key[2]:9s} {d2:6.2f} {ceiling:5d} "
+            f"{display_name(key[0]):16s} {key[1]:8s} {key[2]:9s} {d2:6.2f} {ceiling:5d} "
             f"{str(alive):>10s} {delta:>4s}",
             flush=True,
         )
@@ -250,6 +263,10 @@ def main() -> None:
     )
     parser.add_argument("--n", type=int, default=32)
     parser.add_argument("--q-max", type=int, default=8)
+    parser.add_argument("--bandwidth", type=float, default=1.0)
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--geometry-only", action="store_true")
+    parser.add_argument("--no-fdase", action="store_true")
     parser.add_argument("--views", nargs="+", default=list(SWEEP_VIEWS), choices=SWEEP_VIEWS)
     parser.add_argument(
         "--families",
@@ -309,7 +326,10 @@ def main() -> None:
             q_max=args.q_max,
             views=tuple(args.views),
             families=families,
-            random_state=0,
+            random_state=args.seed,
+            bandwidth=args.bandwidth,
+            geometry_only=args.geometry_only,
+            include_fdase=not args.no_fdase,
         )
         all_rows.extend(rows)
 

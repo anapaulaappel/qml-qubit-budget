@@ -8,8 +8,10 @@ import numpy as np
 import pytest
 
 from qml.data import (
+    display_name,
     load_diabetes,
     load_intrinsic2,
+    load_intrinsic_k,
     load_iris,
     load_moons,
     load_pendigits_qml,
@@ -52,6 +54,8 @@ def test_alive_and_alignment_on_toy_kernels() -> None:
     ones = np.ones((6, 6))
     np.fill_diagonal(ones, 1.0)
     assert kernel_is_alive(0.99, 0.99, 0.99) is False
+    assert kernel_is_alive(0.20, 0.05, 0.10, near_floor=0.15) is True
+    assert kernel_is_alive(0.20, 0.05, 0.10, near_floor=0.25) is False
 
 
 def test_score_kernel_rbf_without_qiskit() -> None:
@@ -115,6 +119,30 @@ def test_pca95_on_low_rank() -> None:
     X = latent @ mix
     q = pca_variance_qubits(X, threshold=0.95)
     assert 1 <= q <= 4
+
+
+def test_display_name_and_intrinsic_k() -> None:
+    assert display_name("onebig_tiny") == "onebig"
+    assert display_name("breast_cancer") == "breast"
+    assert display_name("moons") == "moons"
+    data = load_intrinsic_k(3, n=80, n_features=12, random_state=0)
+    assert data.X.shape == (80, 12)
+    assert data.name == "intrinsic_k3"
+    assert np.allclose(data.X[:, 3:], 0.0)
+
+
+def test_scale_angles_bandwidth() -> None:
+    from qml.circuits import scale_angles
+
+    rng = np.random.default_rng(0)
+    X = rng.normal(size=(20, 3))
+    s1 = scale_angles(X, bandwidth=1.0)
+    s05 = scale_angles(X, bandwidth=0.5)
+    assert s1.max() == pytest.approx(np.pi, rel=1e-5)
+    assert s05.max() == pytest.approx(0.5 * np.pi, rel=1e-5)
+    np.testing.assert_allclose(s05, 0.5 * s1, atol=1e-10)
+    with pytest.raises(ValueError):
+        scale_angles(X, bandwidth=0.0)
 
 
 def test_new_tabular_loaders() -> None:

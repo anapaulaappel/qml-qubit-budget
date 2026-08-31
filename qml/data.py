@@ -214,6 +214,46 @@ def load_moons(
     )
 
 
+DISPLAY_NAMES = {
+    "onebig_tiny": "onebig",
+    "breast_cancer": "breast",
+}
+
+
+def display_name(name: str) -> str:
+    """Nome curto para tabelas e figuras do artigo."""
+    return DISPLAY_NAMES.get(name, name)
+
+
+def load_intrinsic_k(
+    k: int,
+    n: int = 400,
+    n_features: int = 20,
+    noise: float = 0.05,
+    random_state: int = 0,
+) -> QmlDataset:
+    """Sinal k-dimensional nos primeiros eixos; os restantes são nulos.
+
+    Padding nulo evita que a normalização por coluna (cubo unitário, min-max)
+    transforme ruído pequeno em dimensões falsas. O controlo é o k conhecido.
+    """
+    k = max(1, int(k))
+    e = max(int(n_features), k)
+    rng = np.random.default_rng(random_state)
+    signal = rng.uniform(-1.0, 1.0, size=(int(n), k))
+    X = np.zeros((int(n), e), dtype=np.float64)
+    X[:, :k] = signal
+    y = (signal[:, 0] > 0.0).astype(np.int64)
+    return QmlDataset(
+        X=np.asarray(X, dtype=np.float64),
+        y=y,
+        y_fine=y,
+        name=f"intrinsic_k{k}",
+        minority_label=_minority_label(y),
+        noise_label=None,
+    )
+
+
 DATASET_NAMES = (
     "intrinsic2",
     "moons",

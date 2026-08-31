@@ -1,0 +1,5 @@
+dataset,n,d2,d2_ceiling,pca95,pca_knee,fdase_q,fdase_alive
+wine,32,6.475733430966397,7,10,2,8,False
+wine,128,6.475733430966397,7,10,4,8,False
+diabetes,32,5.822588369603908,6,8,3,2,True
+diabetes,128,5.822588369603908,6,8,5,2,True

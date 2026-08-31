@@ -73,6 +73,9 @@ def run_dataset_sweep(
     n_levels: int = 8,
     random_state: int = 0,
     test_size: float = 0.3,
+    bandwidth: float = 1.0,
+    geometry_only: bool = False,
+    include_fdase: bool = True,
 ) -> list[SweepRow]:
     rng = np.random.default_rng(random_state)
     rng_kernel = np.random.default_rng(random_state + 17)
@@ -151,7 +154,9 @@ def run_dataset_sweep(
                 if family == "fidelity":
                     if not QISKIT_AVAILABLE:
                         continue
-                    kernel = fidelity_kernel(Xq, reps=1, entanglement="linear")
+                    kernel = fidelity_kernel(
+                        Xq, reps=1, entanglement="linear", bandwidth=bandwidth
+                    )
                 elif family == "rbf":
                     kernel = rbf_kernel_matrix(Xq)
                 else:
@@ -167,36 +172,41 @@ def run_dataset_sweep(
                     minority_label=data.minority_label,
                     majority_label=majority,
                     regression_target=target,
+                    geometry_only=geometry_only,
                 )
                 rows.append(_row(view, family, q, scores))
 
-    fdase = FDASE(eps=0.15, n_levels=min(n_levels, 7)).fit(X)
-    if fdase.selected_ is not None and fdase.selected_.size >= 2:
-        cols = fdase.selected_[: min(fdase.selected_.size, q_hi)]
-        Xf = X[:, cols]
-        q_f = int(Xf.shape[1])
-        for family in families:
-            if family == "fidelity" and not QISKIT_AVAILABLE:
-                continue
-            if family == "fidelity":
-                kernel = fidelity_kernel(Xf, reps=1, entanglement="linear")
-            elif family == "rbf":
-                kernel = rbf_kernel_matrix(Xf)
-            else:
-                raise ValueError(
-                    f"family deve ser um de {KERNEL_FAMILIES}, recebido {family!r}."
+    if include_fdase:
+        fdase = FDASE(eps=0.15, n_levels=min(n_levels, 7)).fit(X_id)
+        if fdase.selected_ is not None and fdase.selected_.size >= 2:
+            cols = fdase.selected_[: min(fdase.selected_.size, q_hi)]
+            Xf = X[:, cols]
+            q_f = int(Xf.shape[1])
+            for family in families:
+                if family == "fidelity" and not QISKIT_AVAILABLE:
+                    continue
+                if family == "fidelity":
+                    kernel = fidelity_kernel(
+                        Xf, reps=1, entanglement="linear", bandwidth=bandwidth
+                    )
+                elif family == "rbf":
+                    kernel = rbf_kernel_matrix(Xf)
+                else:
+                    raise ValueError(
+                        f"family deve ser um de {KERNEL_FAMILIES}, recebido {family!r}."
+                    )
+                scores = score_kernel(
+                    kernel,
+                    Xf,
+                    y,
+                    train_idx,
+                    test_idx,
+                    minority_label=data.minority_label,
+                    majority_label=majority,
+                    regression_target=target,
+                    geometry_only=geometry_only,
                 )
-            scores = score_kernel(
-                kernel,
-                Xf,
-                y,
-                train_idx,
-                test_idx,
-                minority_label=data.minority_label,
-                majority_label=majority,
-                regression_target=target,
-            )
-            rows.append(_row("fdase", family, q_f, scores))
+                rows.append(_row("fdase", family, q_f, scores))
 
     marked: list[SweepRow] = []
     last_q: dict[tuple[str, str], int] = {}

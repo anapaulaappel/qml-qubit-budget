@@ -65,10 +65,18 @@ def near_far_ratio(near: float, far: float) -> float:
     return float(near / far) if far > 1e-12 else (float("inf") if near > 0 else 0.0)
 
 
-def kernel_is_alive(near: float, far: float, mean_offdiag: float) -> bool:
+def kernel_is_alive(
+    near: float,
+    far: float,
+    mean_offdiag: float,
+    *,
+    near_floor: float = 0.25,
+    ratio_floor: float = 2.0,
+    mean_floor: float = 0.03,
+) -> bool:
     """Kernel ainda distingue geometria clássica: near≫far e off-diagonais não nulos."""
     ratio = near_far_ratio(near, far)
-    return bool(near >= 0.25 and ratio >= 2.0 and mean_offdiag >= 0.03)
+    return bool(near >= near_floor and ratio >= ratio_floor and mean_offdiag >= mean_floor)
 
 
 def _split_kernel(
@@ -208,6 +216,30 @@ def rbf_kernel_matrix(X: NDArray[np.floating]) -> NDArray[np.float64]:
     return np.asarray(rbf_kernel(np.asarray(X, dtype=np.float64)), dtype=np.float64)
 
 
+def score_geometry(
+    kernel: NDArray[np.floating],
+    X_encoded: NDArray[np.floating],
+    *,
+    near_floor: float = 0.25,
+    ratio_floor: float = 2.0,
+    mean_floor: float = 0.03,
+) -> tuple[float, float, float, float, float, bool]:
+    """Devolve (mean_off, std_off, near, far, ratio, alive) sem tarefas a jusante."""
+    conc = kernel_concentration(kernel)
+    near, far = near_far_fidelity(X_encoded, kernel)
+    ratio = near_far_ratio(near, far)
+    finite_ratio = ratio if np.isfinite(ratio) else 0.0
+    alive = kernel_is_alive(
+        near,
+        far,
+        conc["mean_offdiag"],
+        near_floor=near_floor,
+        ratio_floor=ratio_floor,
+        mean_floor=mean_floor,
+    )
+    return conc["mean_offdiag"], conc["std_offdiag"], near, far, finite_ratio, alive
+
+
 def score_kernel(
     kernel: NDArray[np.floating],
     X_encoded: NDArray[np.floating],
@@ -217,17 +249,41 @@ def score_kernel(
     minority_label: int,
     majority_label: int,
     regression_target: NDArray[np.floating],
+    *,
+    geometry_only: bool = False,
+    near_floor: float = 0.25,
+    ratio_floor: float = 2.0,
+    mean_floor: float = 0.03,
 ) -> TaskScores:
-    conc = kernel_concentration(kernel)
-    near, far = near_far_fidelity(X_encoded, kernel)
-    ratio = near_far_ratio(near, far)
+    mean_off, std_off, near, far, ratio, alive = score_geometry(
+        kernel,
+        X_encoded,
+        near_floor=near_floor,
+        ratio_floor=ratio_floor,
+        mean_floor=mean_floor,
+    )
+    if geometry_only:
+        return TaskScores(
+            mean_offdiag=mean_off,
+            std_offdiag=std_off,
+            fid_near=near,
+            fid_far=far,
+            near_far_ratio=ratio,
+            kernel_alive=alive,
+            alignment=float("nan"),
+            knn_acc=float("nan"),
+            cluster_ari=float("nan"),
+            oneclass_auc=float("nan"),
+            krr_r2=float("nan"),
+            qsvm_f1=float("nan"),
+        )
     return TaskScores(
-        mean_offdiag=conc["mean_offdiag"],
-        std_offdiag=conc["std_offdiag"],
+        mean_offdiag=mean_off,
+        std_offdiag=std_off,
         fid_near=near,
         fid_far=far,
-        near_far_ratio=ratio if np.isfinite(ratio) else 0.0,
-        kernel_alive=kernel_is_alive(near, far, conc["mean_offdiag"]),
+        near_far_ratio=ratio,
+        kernel_alive=alive,
         alignment=kernel_target_alignment(kernel, y),
         knn_acc=fidelity_knn_accuracy(kernel, y, train_idx, test_idx),
         cluster_ari=spectral_ari(kernel, y),
