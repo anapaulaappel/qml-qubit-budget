@@ -1,0 +1,14 @@
+{
+  "tag": "blobs_q7_n8",
+  "dataset": "blobs",
+  "backend": "ibm_fez",
+  "q": 7,
+  "n": 8,
+  "shots": 256,
+  "n_circuits": 28,
+  "elapsed_s": 37.711,
+  "mae": 0.05398131187022218,
+  "mean_offdiag_hw": 0.14243861607142858,
+  "mean_offdiag_sv": 0.20214446738974381,
+  "utc": "2026-08-30T19:26:20Z"
+}

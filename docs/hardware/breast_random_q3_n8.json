@@ -1,0 +1,22 @@
+{
+  "tag": "breast_random_q3_n8",
+  "dataset": "breast_random",
+  "backend": "ibm_fez",
+  "q": 3,
+  "n": 8,
+  "shots": 256,
+  "n_circuits": 28,
+  "elapsed_s": 36.382,
+  "mae": 0.029725064703718156,
+  "mean_offdiag_hw": 0.16350446428571427,
+  "mean_offdiag_sv": 0.16641641064070647,
+  "utc": "2026-08-30T19:45:54Z",
+  "extra": {
+    "columns": [
+      15,
+      18,
+      23
+    ],
+    "note": "Random original columns; same 8 rows as PCA jobs."
+  }
+}

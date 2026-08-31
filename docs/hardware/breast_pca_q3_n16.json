@@ -1,0 +1,17 @@
+{
+  "tag": "breast_pca_q3_n16",
+  "dataset": "breast_pca",
+  "backend": "ibm_fez",
+  "q": 3,
+  "n": 16,
+  "shots": 256,
+  "n_circuits": 120,
+  "elapsed_s": 137.258,
+  "mae": 0.02714064448883006,
+  "mean_offdiag_hw": 0.11809895833333334,
+  "mean_offdiag_sv": 0.11480384695036079,
+  "utc": "2026-08-30T22:09:14Z",
+  "extra": {
+    "note": "PCA q=3, n=16. Near/far feasible at this sample size."
+  }
+}

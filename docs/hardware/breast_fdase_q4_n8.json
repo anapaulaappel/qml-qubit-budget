@@ -1,0 +1,23 @@
+{
+  "tag": "breast_fdase_q4_n8",
+  "dataset": "breast_fdase",
+  "backend": "ibm_fez",
+  "q": 4,
+  "n": 8,
+  "shots": 256,
+  "n_circuits": 28,
+  "elapsed_s": 40.763,
+  "mae": 0.012012365987839026,
+  "mean_offdiag_hw": 0.0654296875,
+  "mean_offdiag_sv": 0.06773421498742872,
+  "utc": "2026-08-30T19:45:18Z",
+  "extra": {
+    "columns": [
+      27,
+      21,
+      9,
+      8
+    ],
+    "note": "FD-ASE original columns; same 8 rows as PCA jobs."
+  }
+}

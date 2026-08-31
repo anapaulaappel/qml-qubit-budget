@@ -1,0 +1,17 @@
+{
+  "tag": "blobs_q5_n8",
+  "dataset": "blobs",
+  "backend": "ibm_fez",
+  "q": 5,
+  "n": 8,
+  "shots": 256,
+  "n_circuits": 28,
+  "elapsed_s": 48.0,
+  "mae": 0.07677552210849223,
+  "mean_offdiag_hw": 0.23399999999999999,
+  "mean_offdiag_sv": 0.3150331316018716,
+  "utc": "2026-08-30T19:25:34Z",
+  "extra": {
+    "note": "First live job; wall-clock ~48s; archived from measured kernel."
+  }
+}

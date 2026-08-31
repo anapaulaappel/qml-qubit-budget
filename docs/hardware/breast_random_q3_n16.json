@@ -1,0 +1,22 @@
+{
+  "tag": "breast_random_q3_n16",
+  "dataset": "breast_random",
+  "backend": "ibm_fez",
+  "q": 3,
+  "n": 16,
+  "shots": 256,
+  "n_circuits": 120,
+  "elapsed_s": 143.798,
+  "mae": 0.03420888927449836,
+  "mean_offdiag_hw": 0.13323567708333334,
+  "mean_offdiag_sv": 0.1309104619538684,
+  "utc": "2026-08-30T22:13:48Z",
+  "extra": {
+    "columns": [
+      15,
+      18,
+      23
+    ],
+    "note": "Random original columns, n=16. Baseline for selector comparison."
+  }
+}

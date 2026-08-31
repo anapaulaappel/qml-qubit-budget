@@ -1,0 +1,23 @@
+{
+  "tag": "breast_fdase_q4_n16",
+  "dataset": "breast_fdase",
+  "backend": "ibm_fez",
+  "q": 4,
+  "n": 16,
+  "shots": 256,
+  "n_circuits": 120,
+  "elapsed_s": 130.087,
+  "mae": 0.022681257030648792,
+  "mean_offdiag_hw": 0.06337890625,
+  "mean_offdiag_sv": 0.060843930109079604,
+  "utc": "2026-08-30T22:11:24Z",
+  "extra": {
+    "columns": [
+      27,
+      21,
+      9,
+      8
+    ],
+    "note": "FD-ASE original columns, n=16. Key test for selector claim."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "tag": "breast_pca_q3_n8",
+  "dataset": "breast_pca",
+  "backend": "ibm_fez",
+  "q": 3,
+  "n": 8,
+  "shots": 256,
+  "n_circuits": 28,
+  "elapsed_s": 37.368,
+  "mae": 0.02072500296184051,
+  "mean_offdiag_hw": 0.08217075892857142,
+  "mean_offdiag_sv": 0.08129366741928143,
+  "utc": "2026-08-30T19:26:57Z"
+}
