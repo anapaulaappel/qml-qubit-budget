@@ -8,7 +8,7 @@ What this line evaluates is the geometry: \(D_2\) (how many qubits) and FD-ASE (
 
 ## 1. Embedding dimension versus intrinsic dimension
 
-A tabular data set is a cloud of \(N\) points in \(\mathbb{R}^{E}\). \(E\) is the **embedding dimension** (ambient dimension): the number of recorded attributes. It is almost never the number of degrees of freedom the cloud actually has.
+A tabular data set is a set of \(N\) records in \(\mathbb{R}^{E}\). \(E\) is the **embedding dimension** (ambient dimension): the number of recorded attributes. It is almost never the number of degrees of freedom the data actually have.
 
 **Intrinsic dimension** (ID) is that number of degrees of freedom: the dimension of the support, the manifold, or the fractal set the data live on.
 
@@ -16,7 +16,7 @@ Three pictures:
 
 1. **A circle in 20-D.** Two axes carry \((\cos t, \sin t)\); the other 18 are noise. \(E=20\), but a single parameter \(t\) describes the signal. The ID is \(\approx 1\), not 20 and not 2 (the circle does not fill the disk).
 2. **A plane in 100-D.** Two independent linear axes, the rest constant or noise. ID \(= 2\). Here PCA and ID agree, because the support *is* a linear subspace.
-3. **A Swiss roll.** A 2-D sheet rolled up in 3-D. The ID is 2, but PCA needs **three** components to explain the cloud in ambient space: the roll is nonlinear. Linear variance \(\neq\) dimension of the support.
+3. **A Swiss roll.** A 2-D sheet rolled up in 3-D. The ID is 2, but PCA needs **three** components to explain the data in ambient space: the roll is nonlinear. Linear variance \(\neq\) dimension of the support.
 
 In QML with *angle encoding*, each attribute (or each PC) typically becomes **one qubit** [havlicek2019supervised, schuld2019quantum]. Encoding \(E\) encodes the ambient dimension. The circuit does not “know” that 18 axes are noise: it treats them as real coordinates, and the fidelity kernel feels the dimension **in which states are prepared**, not the ID.
 
@@ -30,7 +30,7 @@ So ID is not a geometric aside. It is the budget: if the support has ID \(\appro
 
 ## 2. Correlation fractal dimension \(D_2\)
 
-There are many dimension definitions (Hausdorff, box-counting \(D_0\), information \(D_1\), correlation \(D_2\), …). For point clouds in data mining, the one that can be estimated stably is the **correlation fractal dimension** \(D_2\) [belussi1995estimating, grassberger1983characterization].
+There are many dimension definitions (Hausdorff, box-counting \(D_0\), information \(D_1\), correlation \(D_2\), …). For data sets in data mining, the one that can be estimated stably is the **correlation fractal dimension** \(D_2\) [belussi1995estimating, grassberger1983characterization].
 
 Intuition: count pairs of points that fall in the same cell of a grid of side \(r\). If the support behaves like a set of dimension \(d\), that count scales as a power of \(r\):
 
@@ -48,7 +48,7 @@ That is the slope of the plot LiBOC already drew [traina2000fast]. Scales at whi
 
 Properties that matter for QML:
 
-- **\(D_2 \le E\)** always. Equality only if the cloud fills the ambient cube.
+- **\(D_2 \le E\)** always. Equality only if the data fill the ambient cube.
 - **Invariant to redundant axes.** If column 7 is a multiple of column 2, \(D_2\) barely rises when 7 is included. That is exactly the FD-ASE test.
 - **Multiscale.** The fit uses several \(r\). That is why \(D_2\) is slower to be fooled by *local* noise than a nearest-neighbour estimator (TwoNN [facco2017estimating] sees geometry at the scale of \(r_1, r_2\); if embedding noise is of that order, it inflates ID).
 - **No labels and no circuit.** It is computed classically, once, on a large subset (hundreds or thousands of points — not on the \(n=32\) of a NISQ kernel).

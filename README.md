@@ -10,11 +10,11 @@ The answer used here is the **correlation fractal dimension** $D_2$.
 
 ## Why fractal dimension
 
-A point cloud in $\mathbb{R}^E$ almost never fills the recorded cube. Intrinsic dimension (ID) is the number of degrees of freedom of the support. $D_2$ estimates that number from pair counts on a multi-scale grid: if occupancy scales as $S(r) \propto r^{D_2}$, the slope of $\log S$ versus $\log r$ is the dimension of the set (Grassberger & Procaccia; Belussi & Faloutsos).
+A data set in $\mathbb{R}^E$ almost never fills the recorded cube. Intrinsic dimension (ID) is the number of degrees of freedom of the support. $D_2$ estimates that number from pair counts on a multi-scale grid: if occupancy scales as $S(r) \propto r^{D_2}$, the slope of $\log S$ versus $\log r$ is the dimension of the set (Grassberger & Procaccia; Belussi & Faloutsos).
 
 Properties that matter for encoding:
 
-- $D_2 \le E$, with equality only when the cloud fills ambient space.
+- $D_2 \le E$, with equality only when the data fill ambient space.
 - Redundant or tightly correlated columns barely raise $D_2$.
 - The estimate can be non-integer (fractal supports).
 - It is classical, unsupervised, and computed on thousands of rows — not on the tiny sample used to build a NISQ kernel.
@@ -25,7 +25,7 @@ That is the opposite of PCA at encoding time: PCA returns linear mixtures of eve
 
 ## What this code is for
 
-The working hypothesis is that an angle-encoded kernel **collapses** when the circuit is wider than the data: off-diagonal fidelities flatten, near/far structure disappears, and downstream tasks (QSVM, fidelity $k$NN, spectral clustering, one-class SVM, kernel ridge) inherit a near-diagonal Gram matrix.
+The working hypothesis is that an angle-encoded kernel **collapses** when the circuit is wider than the data: off-diagonal fidelities flatten, near/far structure disappears, and downstream tasks (QSVM, fidelity $k$-NN, spectral clustering, one-class SVM, kernel ridge) inherit a near-diagonal Gram matrix.
 
 The proposed budget is
 
