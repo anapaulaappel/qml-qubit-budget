@@ -43,6 +43,7 @@ class SweepRow:
     twonn: float
     twonn_ceiling: int
     pca95: int
+    effective_rank: float = float("nan")
 
 
 def _majority_label(y: NDArray[np.integer]) -> int:
@@ -138,6 +139,7 @@ def run_dataset_sweep(
             twonn=twonn,
             twonn_ceiling=twonn_ceiling,
             pca95=pca95,
+            effective_rank=scores.effective_rank,
         )
 
     rows: list[SweepRow] = []

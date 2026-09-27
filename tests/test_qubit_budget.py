@@ -12,6 +12,7 @@ from qml.data import (
     load_diabetes,
     load_intrinsic2,
     load_intrinsic_k,
+    load_intrinsic_k_oblique,
     load_iris,
     load_moons,
     load_pendigits_qml,
@@ -19,6 +20,7 @@ from qml.data import (
 from qml.features import d2_qubit_ceiling, project_to_q
 from qml.id_estimators import pca_variance_qubits, two_nn_dimension
 from qml.kernel_tasks import (
+    effective_rank,
     kernel_is_alive,
     kernel_target_alignment,
     near_far_ratio,
@@ -26,6 +28,23 @@ from qml.kernel_tasks import (
     score_kernel,
 )
 from qml.qubit_budget import last_alive_q, run_dataset_sweep
+
+
+def test_oblique_rotation_mixes_axes_and_keeps_rank() -> None:
+    aligned = load_intrinsic_k(3, n=80, n_features=12, random_state=0)
+    oblique = load_intrinsic_k_oblique(3, n=80, n_features=12, random_state=0)
+    assert oblique.X.shape == aligned.X.shape
+    assert np.linalg.matrix_rank(oblique.X, tol=1e-8) == 3
+    assert np.min(np.linalg.norm(oblique.X, axis=0)) > 1e-6
+    again = load_intrinsic_k_oblique(3, n=80, n_features=12, random_state=0)
+    assert np.allclose(oblique.X, again.X)
+
+
+def test_effective_rank_of_identity_and_rank_one() -> None:
+    eye = np.eye(6)
+    assert effective_rank(eye) == pytest.approx(6.0)
+    ones = np.ones((6, 6))
+    assert effective_rank(ones) == pytest.approx(1.0)
 
 
 def test_d2_ceiling() -> None:

@@ -254,6 +254,42 @@ def load_intrinsic_k(
     )
 
 
+def _haar_orthogonal(width: int, rng: np.random.Generator) -> NDArray[np.float64]:
+    """Matriz ortogonal de Haar via QR, com diagonal de R positiva."""
+    gaussian = rng.normal(size=(width, width))
+    q, r = np.linalg.qr(gaussian)
+    signs = np.sign(np.diag(r))
+    signs[signs == 0.0] = 1.0
+    return np.asarray(q * signs, dtype=np.float64)
+
+
+def load_intrinsic_k_oblique(
+    k: int,
+    n: int = 400,
+    n_features: int = 20,
+    random_state: int = 0,
+) -> QmlDataset:
+    """O mesmo cubo k-D de ``load_intrinsic_k``, rodado por uma matriz ortogonal.
+
+    O suporte continua a ter largura k, mas deixa de estar alinhado com os
+    eixos gravados. FD-ASE vê colunas misturadas; PCA vê o subespaço.
+    """
+    aligned = load_intrinsic_k(
+        k, n=n, n_features=n_features, random_state=random_state
+    )
+    rng = np.random.default_rng(random_state + 10_007)
+    rotation = _haar_orthogonal(aligned.X.shape[1], rng)
+    mixed = np.asarray(aligned.X @ rotation, dtype=np.float64)
+    return QmlDataset(
+        X=mixed,
+        y=aligned.y,
+        y_fine=aligned.y_fine,
+        name=f"intrinsic_k{k}_oblique",
+        minority_label=aligned.minority_label,
+        noise_label=None,
+    )
+
+
 DATASET_NAMES = (
     "intrinsic2",
     "moons",

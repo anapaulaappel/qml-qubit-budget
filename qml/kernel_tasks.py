@@ -42,6 +42,7 @@ class TaskScores:
     oneclass_auc: float
     krr_r2: float
     qsvm_f1: float
+    effective_rank: float
 
 
 def frobenius_cosine(a: NDArray[np.floating], b: NDArray[np.floating]) -> float:
@@ -212,6 +213,26 @@ def precomputed_svm_f1(
     return float(f1_score(y[test_idx], pred, average="macro", zero_division=0))
 
 
+def effective_rank(kernel: NDArray[np.floating]) -> float:
+    """Rank efetivo de Roy e Vetterli: exp da entropia dos autovalores normalizados.
+
+    Um kernel de fidelidade colapsado fica perto da identidade, espectro plano,
+    rank efetivo perto de n. Um kernel com geometria tem espectro mais
+    concentrado e rank efetivo menor. Não usa os pisos da regra alive.
+    """
+    gram = np.asarray(kernel, dtype=np.float64)
+    gram = 0.5 * (gram + gram.T)
+    eigenvalues = np.linalg.eigvalsh(gram)
+    eigenvalues = np.clip(eigenvalues, 0.0, None)
+    total = float(eigenvalues.sum())
+    if total <= 0.0:
+        return 0.0
+    weights = eigenvalues / total
+    weights = weights[weights > 0.0]
+    entropy = float(-np.sum(weights * np.log(weights)))
+    return float(np.exp(entropy))
+
+
 def rbf_kernel_matrix(X: NDArray[np.floating]) -> NDArray[np.float64]:
     return np.asarray(rbf_kernel(np.asarray(X, dtype=np.float64)), dtype=np.float64)
 
@@ -276,6 +297,7 @@ def score_kernel(
             oneclass_auc=float("nan"),
             krr_r2=float("nan"),
             qsvm_f1=float("nan"),
+            effective_rank=effective_rank(kernel),
         )
     return TaskScores(
         mean_offdiag=mean_off,
@@ -290,4 +312,5 @@ def score_kernel(
         oneclass_auc=oneclass_auc(kernel, y, train_idx, test_idx, majority_label),
         krr_r2=krr_r2(kernel, regression_target, train_idx, test_idx),
         qsvm_f1=precomputed_svm_f1(kernel, y, train_idx, test_idx, minority_label),
+        effective_rank=effective_rank(kernel),
     )

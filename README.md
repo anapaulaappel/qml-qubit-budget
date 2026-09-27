@@ -60,6 +60,9 @@ python3 qml/run_fdase_table.py
 python3 qml/run_bandwidth.py
 python3 qml/run_synthetic_id.py
 python3 qml/run_robustness.py
+python3 qml/run_oblique.py
+python3 qml/run_effective_rank.py
+python3 qml/run_downstream.py
 python3 -m pytest -q tests
 ```
 
@@ -74,7 +77,7 @@ python3 qml/run_hardware.py --probe
 
 | Path | Role |
 |------|------|
-| `docs/qubit-budget/` | Simulator $q$-sweep, FD-ASE table, synthetic $k$, seeds, $n=128$ |
+| `docs/qubit-budget/` | Simulator $q$-sweep, FD-ASE table, synthetic $k$, oblique axes, effective rank, seeds, $n=128$, downstream $n=128$ |
 | `docs/figures/qubit-budget/` | English plots |
 | `docs/encodings/` | Bandwidth and packed-encoding ablations |
 | `docs/hardware/` | IBM kernels (`ibm_fez`, 256 shots) |
